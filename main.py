@@ -20,6 +20,10 @@ class Input_Url(BaseModel):
 
 app = FastAPI()
 
+@app.post("/")
+def home():
+    return {"message":"wokring i guess"}
+
 @app.post("/open_ai_summarise_url/")
 def summarise_text(in_url: Input_Url):
     text = get_text_from_url(in_url.url)
@@ -192,7 +196,7 @@ def openai_summary(paperContent):
     return (response["choices"][0]["text"])
 
 def get_text_from_url(url):
-    """
+    """https://sih-hackathon-api.herokuapp.com/
     Parses the information in the given url and returns the text from it
     Parameters:
         url (string) : URL to an article
