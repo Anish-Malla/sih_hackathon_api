@@ -1,7 +1,7 @@
 from typing import Optional
 from fastapi import Request, FastAPI
 import nltk
-nltk.download('punkt')
+# nltk.download('punkt')
 from nltk.corpus import stopwords
 from nltk.cluster.util import cosine_distance
 from nltk.tokenize import sent_tokenize
