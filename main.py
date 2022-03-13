@@ -20,7 +20,7 @@ class Input_Url(BaseModel):
 
 app = FastAPI()
 
-@app.post("/")
+@app.get("/")
 def home():
     return {"message":"wokring i guess"}
 
