@@ -12,6 +12,8 @@ from pydantic import BaseModel
 import openai
 from newspaper import Article
 
+from fastapi.middleware.cors import CORSMiddleware
+
 class Input_Text(BaseModel):
     text: str
 
@@ -19,6 +21,19 @@ class Input_Url(BaseModel):
     url: str
 
 app = FastAPI()
+
+origins = [
+    "https://sih-hackathon-api.herokuapp.com",
+    "http://sih-hackathon-api.herokuapp.com"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 def home():
