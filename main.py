@@ -22,10 +22,7 @@ class Input_Url(BaseModel):
 
 app = FastAPI()
 
-origins = [
-    "https://sih-hackathon-api.herokuapp.com",
-    "http://sih-hackathon-api.herokuapp.com"
-]
+origins = ["*"]
 
 app.add_middleware(
     CORSMiddleware,
