@@ -18,6 +18,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from bs4 import BeautifulSoup as bs
 import requests
 
+import os
+from twilio.rest import Client
+
 PIB_ARTICLES_URL = "https://pib.gov.in/allRel.aspx"
 
 class Input_Text(BaseModel):
@@ -25,6 +28,10 @@ class Input_Text(BaseModel):
 
 class Input_Url(BaseModel):
     url: str
+
+class Input_text(BaseModel):
+    text: str
+    number: str
 
 app = FastAPI()
 
@@ -41,17 +48,30 @@ app.add_middleware(
 def home():
     return {"message":"wokring i guess"}
 
+@app.post("/send_message/")
+def send_text(in_text_msg: Input_text):
+    body = in_text_msg.text
+    phone_num = in_text_msg.number
+    send_text_msg(phone_num, body)
+
 @app.post("/article_from_url/")
 def get_full_artciel(in_url: Input_Url):
     text = get_text_from_url(in_url.url)
     return {"entire_text" : text}
 
+@app.post("/title_from_url/")
+def get_full_artciel(in_url: Input_Url):
+    title = get_title_from_url(in_url.url)
+    return {"title" : title}
+
 @app.get("/get_latest_articles/")
 def get_latest_articles():
     r = requests.get(PIB_ARTICLES_URL)
     soup = bs(r.content, 'lxml')
+
+    titles = [item["title"] if item.get("href") is not None else item['src'] for item in soup.select('[href^="/PressReleasePage.aspx"]')]
     links = [f"https://pib.gov.in{item['href']}" if item.get('href') is not None else item['src'] for item in soup.select('[href^="/PressReleasePage.aspx"]')]
-    return {"links_of_articles":links}
+    return {"links_of_articles":links, "titles_of_articles":titles}
 
 @app.post("/bow_summarise_url/")
 def summarise_text(in_url: Input_Url):
@@ -197,6 +217,12 @@ def nk_sir_summary(text):
 
     return result
 
+# def get_title_from_url(url):
+#     article = Article(url, language="en")
+#     article.download()
+#     article.parse()
+#     return article.title
+
 def get_text_from_url(url):
     """https://sih-hackathon-api.herokuapp.com/
     Parses the information in the given url and returns the text from it
@@ -209,3 +235,16 @@ def get_text_from_url(url):
     article.download()
     article.parse()
     return article.text
+
+def send_text_msg(to_num, body):
+    account_sid = 'ACaa81b72e0dd7c49f64f06dbb7a2753d7'
+    auth_token = '1061be1c3b94a6552dde480f002d8110'
+    client = Client(account_sid, auth_token)
+
+    message = client.messages.create(
+            from_='+19717912343',
+            to=f"+91{to_num}",
+            body=body
+        )
+
+    print(message.sid)
