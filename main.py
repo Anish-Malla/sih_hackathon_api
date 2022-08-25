@@ -68,7 +68,8 @@ def get_latest_articles():
 
     titles = [item["title"] if item.get("href") is not None else item['src'] for item in soup.select('[href^="/PressReleasePage.aspx"]')]
     links = [f"https://pib.gov.in{item['href']}" if item.get('href') is not None else item['src'] for item in soup.select('[href^="/PressReleasePage.aspx"]')]
-    return {"links_of_articles":links, "titles_of_articles":titles}
+    full_texts = [get_text_from_url(f"https://pib.gov.in{item['href']}") if item.get('href') is not None else item['src'] for item in soup.select('[href^="/PressReleasePage.aspx"]')]
+    return {"links_of_articles":links, "titles_of_articles":titles, "full_text":full_texts}
 
 @app.post("/bow_summarise_url/")
 def summarise_text(in_url: Input_Url):
