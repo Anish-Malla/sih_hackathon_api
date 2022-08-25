@@ -1,18 +1,24 @@
 from typing import Optional
 from fastapi import Request, FastAPI
 import nltk
-# nltk.download('punkt')
+
 from nltk.corpus import stopwords
 from nltk.cluster.util import cosine_distance
 from nltk.tokenize import sent_tokenize
+
 import networkx as nx
 import re
 import numpy as np
 from pydantic import BaseModel
-import openai
 from newspaper import Article
+import time
 
 from fastapi.middleware.cors import CORSMiddleware
+
+from bs4 import BeautifulSoup as bs
+import requests
+
+PIB_ARTICLES_URL = "https://pib.gov.in/allRel.aspx"
 
 class Input_Text(BaseModel):
     text: str
@@ -29,21 +35,23 @@ app.add_middleware(
     allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
-)
+    allow_headers=["*"])
 
 @app.get("/")
 def home():
     return {"message":"wokring i guess"}
 
-@app.post("/open_ai_summarise_url/")
-def summarise_text(in_url: Input_Url):
+@app.post("/article_from_url/")
+def get_full_artciel(in_url: Input_Url):
     text = get_text_from_url(in_url.url)
-    return {"summary_from_url" : openai_summary(text)}
+    return {"entire_text" : text}
 
-@app.post("/open_ai_summarise_text/")
-def summarise_text(in_text : Input_Text):
-    return {"summary" : openai_summary(in_text.text)}
+@app.get("/get_latest_articles/")
+def get_latest_articles():
+    r = requests.get(PIB_ARTICLES_URL)
+    soup = bs(r.content, 'lxml')
+    links = [f"https://pib.gov.in{item['href']}" if item.get('href') is not None else item['src'] for item in soup.select('[href^="/PressReleasePage.aspx"]')]
+    return {"links_of_articles":links}
 
 @app.post("/bow_summarise_url/")
 def summarise_text(in_url: Input_Url):
@@ -77,7 +85,6 @@ def sentence_split(paragraph):
 
 # Read the text and tokenize into sentences
 def read_article(text):
-    
     sentences =[]
     
     sentences = sent_tokenize(text)
@@ -189,23 +196,6 @@ def nk_sir_summary(text):
         result += '{} '.format(sentence_list[sort_list[i]])
 
     return result
-
-def openai_summary(paperContent):
-    tldr_tag = "\n tl;dr:"
-    openai.organization = 'org-9rbTVUqetC666xwjyOrBz0A6'
-    openai.api_key = "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"
-    engine_list = openai.Engine.list() 
-    
-    paperContent += tldr_tag
-    
-    response = openai.Completion.create(engine="davinci",prompt=paperContent,temperature=0.7,
-        max_tokens=200,
-        top_p=1.0,
-        frequency_penalty=0.0,
-        presence_penalty=0.0
-    )
-
-    return (response["choices"][0]["text"])
 
 def get_text_from_url(url):
     """https://sih-hackathon-api.herokuapp.com/
