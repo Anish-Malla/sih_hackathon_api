@@ -21,6 +21,8 @@ import requests
 import os
 from twilio.rest import Client
 
+# from styleformer import Styleformer
+
 PIB_ARTICLES_URL = "https://pib.gov.in/allRel.aspx"
 
 class Input_Text(BaseModel):
@@ -58,11 +60,6 @@ def send_text(in_text_msg: Input_text):
 def get_full_artciel(in_url: Input_Url):
     text = get_text_from_url(in_url.url)
     return {"entire_text" : text}
-
-@app.post("/title_from_url/")
-def get_full_artciel(in_url: Input_Url):
-    title = get_title_from_url(in_url.url)
-    return {"title" : title}
 
 @app.get("/get_latest_articles/")
 def get_latest_articles():
@@ -238,7 +235,7 @@ def get_text_from_url(url):
 
 def send_text_msg(to_num, body):
     account_sid = 'ACaa81b72e0dd7c49f64f06dbb7a2753d7'
-    auth_token = '1061be1c3b94a6552dde480f002d8110'
+    auth_token = '03713862d695cd71bf485872fbe2fa78'
     client = Client(account_sid, auth_token)
 
     message = client.messages.create(
