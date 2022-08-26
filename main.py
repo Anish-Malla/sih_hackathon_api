@@ -21,6 +21,10 @@ import requests
 import os
 from twilio.rest import Client
 
+import smtplib
+import ssl
+from email.message import EmailMessage
+
 # from styleformer import Styleformer
 
 PIB_ARTICLES_URL = "https://pib.gov.in/allRel.aspx"
