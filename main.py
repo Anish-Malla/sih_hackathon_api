@@ -35,6 +35,10 @@ class Input_text(BaseModel):
     text: str
     number: str
 
+class Input_email(BaseModel):
+    text: str
+    email: str
+
 app = FastAPI()
 
 origins = ["*"]
@@ -55,6 +59,23 @@ def send_text(in_text_msg: Input_text):
     body = in_text_msg.text
     phone_num = in_text_msg.number
     send_text_msg(phone_num, body)
+
+@app.post("/send_email/")
+def send_email(in_email: Input_email):
+    send_email_func(in_email.text, in_email.email)
+
+def send_email_func(body, email_receiver, email_sender="espresso.bytee@gmail.com", email_password="kkdkeayortyzcjjv"):
+    em = EmailMessage()
+    em['From'] = email_sender
+    em['To'] = email_receiver
+    em['Subject'] = "PIB Summary Newsletter"
+    em.set_content(body)
+
+    con = ssl.create_default_context()
+
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=con) as smtp:
+        smtp.login(email_sender, email_password)
+        smtp.sendmail(email_sender, email_receiver, em.as_string())
 
 @app.post("/article_from_url/")
 def get_full_artciel(in_url: Input_Url):
